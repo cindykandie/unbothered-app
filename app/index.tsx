@@ -3,91 +3,100 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Header } from '@/components/Header';
+import { DrawerMenu } from '@/components/DrawerMenu';
+import { AffirmationCard } from '@/components/AffirmationCard';
 import { ChallengeCard } from '@/components/ChallengeCard';
-import { QuoteCard } from '@/components/QuoteCard';
 import { ProgressCard } from '@/components/ProgressCard';
 import { COLORS } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
 import { getDailyAffirmation } from '@/constants/affirmations';
-import { loadCompletedDays, saveCompletedDay } from '@/utils/storage';
+import { getUserName, getCompletedDays, saveCompletedDay } from '@/utils/storage';
+import { getGreeting, getDateLabel } from '@/utils/greetings';
 import { scheduleDailyReminder } from '@/utils/notifications';
-import * as Notifications from 'expo-notifications';
 
-const TOTAL_DAYS = 21;
+const TOTAL = 21;
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [userName, setUserName] = useState('');
   const [completedDays, setCompletedDays] = useState<number[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const affirmation = getDailyAffirmation();
 
   useEffect(() => {
-    loadCompletedDays().then((days) => {
+    async function init() {
+      const name = await getUserName();
+      if (!name) {
+        router.replace('/onboarding');
+        return;
+      }
+      const days = await getCompletedDays();
+      setUserName(name);
       setCompletedDays(days);
       setLoading(false);
-    });
-    requestAndSchedule();
+      scheduleDailyReminder();
+    }
+    init();
   }, []);
 
-  async function requestAndSchedule() {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status === 'granted') {
-      await scheduleDailyReminder();
-    }
-  }
-
   async function handleMarkComplete() {
-    if (completedDays.includes(currentDay)) return;
+    if (todayDone || allDone) return;
     const updated = [...completedDays, currentDay];
     setCompletedDays(updated);
     await saveCompletedDay(currentDay);
   }
 
-  const currentDay = Math.min(completedDays.length + 1, TOTAL_DAYS);
-  const allDone = completedDays.length >= TOTAL_DAYS;
+  const currentDay = Math.min(completedDays.length + 1, TOTAL);
+  const allDone = completedDays.length >= TOTAL;
   const todayDone = completedDays.includes(currentDay);
   const challenge = challenges[currentDay - 1];
-
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? 'Good morning.' : hour < 17 ? 'Good afternoon.' : 'Good evening.';
 
   if (loading) return <View style={styles.safe} />;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <Header onMenuPress={() => setDrawerOpen(true)} />
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.dayCount}>
-            {allDone ? 'Journey complete' : `Day ${currentDay} of ${TOTAL_DAYS}`}
-          </Text>
-          <Text style={styles.greeting}>{greeting}</Text>
+        {/* Greeting */}
+        <View style={styles.greeting}>
+          <Text style={styles.greetingText}>{getGreeting(userName)}</Text>
+          <Text style={styles.date}>{getDateLabel()}</Text>
         </View>
 
         {/* Daily affirmation */}
-        <QuoteCard affirmation={affirmation} />
+        <AffirmationCard affirmation={affirmation} />
+
+        <View style={styles.spacer} />
 
         {/* Today's challenge */}
-        {!allDone && (
-          <ChallengeCard challenge={challenge} isDone={todayDone} />
-        )}
-
-        {allDone && (
+        {!allDone ? (
+          <>
+            <Text style={styles.sectionLabel}>Today's challenge</Text>
+            <ChallengeCard
+              challenge={challenge}
+              isDone={todayDone}
+              onPress={() => router.push(`/challenge/${currentDay}`)}
+            />
+          </>
+        ) : (
           <View style={styles.completeCard}>
-            <Text style={styles.completeEmoji}>✦</Text>
+            <Text style={styles.completeSymbol}>✦</Text>
             <Text style={styles.completeTitle}>You did it.</Text>
             <Text style={styles.completeBody}>
-              21 days of choosing your peace. That took courage.
+              21 days of choosing your peace. That took real courage.
             </Text>
           </View>
         )}
 
         {/* Progress */}
-        <ProgressCard completedDays={completedDays} totalDays={TOTAL_DAYS} />
+        <ProgressCard completedDays={completedDays} totalDays={TOTAL} />
 
         {/* Actions */}
         {!allDone && (
@@ -98,7 +107,7 @@ export default function HomeScreen() {
             activeOpacity={0.8}
           >
             <Text style={[styles.primaryBtnText, todayDone && styles.primaryBtnTextDone]}>
-              {todayDone ? '✓  Completed' : 'Mark Complete'}
+              {todayDone ? '✓  Completed today' : 'Mark Complete'}
             </Text>
           </TouchableOpacity>
         )}
@@ -111,6 +120,12 @@ export default function HomeScreen() {
           <Text style={styles.spiralBtnText}>I'm Spiraling</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <DrawerMenu
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        userName={userName}
+      />
     </SafeAreaView>
   );
 }
@@ -122,25 +137,32 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: 24,
-    paddingTop: 20,
     paddingBottom: 48,
   },
-  header: {
-    marginBottom: 28,
-  },
-  dayCount: {
-    color: COLORS.primary,
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-  },
   greeting: {
+    marginTop: 4,
+    marginBottom: 24,
+  },
+  greetingText: {
     color: COLORS.text,
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: '700',
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
+    marginBottom: 4,
+  },
+  date: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+  },
+  spacer: { height: 4 },
+  sectionLabel: {
+    color: COLORS.textMuted,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+    marginTop: 24,
   },
   completeCard: {
     backgroundColor: COLORS.card,
@@ -151,9 +173,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  completeEmoji: {
+  completeSymbol: {
     color: COLORS.accent,
-    fontSize: 32,
+    fontSize: 30,
     marginBottom: 12,
   },
   completeTitle: {
@@ -191,7 +213,6 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
-    letterSpacing: 0.3,
   },
   primaryBtnTextDone: {
     color: COLORS.primary,

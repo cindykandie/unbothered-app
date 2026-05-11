@@ -1,12 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Header } from '@/components/Header';
+import { DrawerMenu } from '@/components/DrawerMenu';
 import { COLORS } from '@/constants/colors';
 import { getRandomAffirmation } from '@/constants/affirmations';
+import { getUserName } from '@/utils/storage';
 import type { Affirmation } from '@/types';
 
-const BREATH_PHASES = [
+const PHASES = [
   { label: 'Breathe in', duration: 4 },
   { label: 'Hold', duration: 4 },
   { label: 'Breathe out', duration: 6 },
@@ -14,11 +18,16 @@ const BREATH_PHASES = [
 ];
 
 export default function SpiralScreen() {
-  const router = useRouter();
+  const [userName, setUserName] = useState('');
   const [affirmation] = useState<Affirmation>(getRandomAffirmation());
   const [phaseIndex, setPhaseIndex] = useState(0);
-  const [countdown, setCountdown] = useState(BREATH_PHASES[0].duration);
+  const [countdown, setCountdown] = useState(PHASES[0].duration);
   const [running, setRunning] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    getUserName().then((n) => setUserName(n ?? ''));
+  }, []);
 
   useEffect(() => {
     if (!running) return;
@@ -26,79 +35,77 @@ export default function SpiralScreen() {
       const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
       return () => clearTimeout(t);
     }
-    const nextIndex = (phaseIndex + 1) % BREATH_PHASES.length;
-    setPhaseIndex(nextIndex);
-    setCountdown(BREATH_PHASES[nextIndex].duration);
+    const next = (phaseIndex + 1) % PHASES.length;
+    setPhaseIndex(next);
+    setCountdown(PHASES[next].duration);
   }, [running, countdown]);
 
-  function toggleBreath() {
+  function toggle() {
     if (running) {
       setRunning(false);
       setPhaseIndex(0);
-      setCountdown(BREATH_PHASES[0].duration);
+      setCountdown(PHASES[0].duration);
     } else {
       setRunning(true);
     }
   }
 
-  const phase = BREATH_PHASES[phaseIndex];
+  const phase = PHASES[phaseIndex];
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        {/* Back */}
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backText}>← Return to Home</Text>
-        </TouchableOpacity>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <Header title="Spiral Reset" onMenuPress={() => setDrawerOpen(true)} />
 
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Grounding heading */}
-        <View style={styles.top}>
-          <Text style={styles.heading}>You're okay.</Text>
-          <Text style={styles.subheading}>
-            You are safe. This moment will pass.
-          </Text>
-        </View>
+        <Text style={styles.heading}>You're okay.</Text>
+        <Text style={styles.sub}>You are safe. This moment will pass.</Text>
 
         {/* Affirmation */}
-        <View style={styles.affirmationCard}>
-          <Text style={styles.affirmationMark}>"</Text>
-          <Text style={styles.affirmationText}>{affirmation.text}</Text>
+        <View style={styles.affirmCard}>
+          <Text style={styles.affirmMark}>"</Text>
+          <Text style={styles.affirmText}>{affirmation.text}</Text>
         </View>
 
-        {/* Breathing guide */}
+        {/* Box breathing */}
         <View style={styles.breathSection}>
-          <Text style={styles.breathLabel}>Box Breathing</Text>
-
+          <Text style={styles.breathTitle}>Box Breathing</Text>
           <TouchableOpacity
-            style={[styles.breathCircle, running && styles.breathCircleActive]}
-            onPress={toggleBreath}
+            style={[styles.circle, running && styles.circleActive]}
+            onPress={toggle}
             activeOpacity={0.85}
           >
-            <Text style={styles.breathPhase}>
+            <Text style={styles.circlePhase}>
               {running ? phase.label : 'Tap to begin'}
             </Text>
-            {running && (
-              <Text style={styles.breathCount}>{countdown}</Text>
-            )}
+            {running && <Text style={styles.circleCount}>{countdown}</Text>}
           </TouchableOpacity>
-
-          <Text style={styles.breathHint}>
-            4 in · 4 hold · 6 out · 2 rest
-          </Text>
+          <Text style={styles.breathHint}>4 in · 4 hold · 6 out · 2 rest</Text>
         </View>
 
-        {/* Grounding reminder */}
-        <View style={styles.groundingCard}>
-          <Text style={styles.groundingTitle}>Ground yourself</Text>
-          <Text style={styles.groundingText}>
-            Name 5 things you can see.{'\n'}
-            Name 4 things you can touch.{'\n'}
-            Name 3 things you can hear.{'\n'}
-            Name 2 things you can smell.{'\n'}
-            Name 1 thing you can taste.
-          </Text>
+        {/* 5-4-3-2-1 grounding */}
+        <View style={styles.groundCard}>
+          <Text style={styles.groundTitle}>Ground yourself</Text>
+          {[
+            '5 things you can see',
+            '4 things you can touch',
+            '3 things you can hear',
+            '2 things you can smell',
+            '1 thing you can taste',
+          ].map((item, i) => (
+            <View key={i} style={styles.groundItem}>
+              <Text style={styles.groundNum}>{5 - i}</Text>
+              <Text style={styles.groundText}>{item}</Text>
+            </View>
+          ))}
         </View>
-      </View>
+      </ScrollView>
+
+      <DrawerMenu
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        userName={userName}
+      />
     </SafeAreaView>
   );
 }
@@ -108,67 +115,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  container: {
-    flex: 1,
+  scroll: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-  backBtn: {
-    alignSelf: 'flex-start',
-    marginBottom: 28,
-  },
-  backText: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-  },
-  top: {
-    marginBottom: 28,
+    paddingBottom: 48,
   },
   heading: {
     color: COLORS.text,
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: '700',
     letterSpacing: -0.5,
-    marginBottom: 8,
+    marginTop: 8,
+    marginBottom: 6,
   },
-  subheading: {
+  sub: {
     color: COLORS.textSecondary,
     fontSize: 16,
     lineHeight: 24,
+    marginBottom: 28,
   },
-  affirmationCard: {
+  affirmCard: {
     backgroundColor: COLORS.secondary,
     borderRadius: 20,
     padding: 24,
     marginBottom: 28,
   },
-  affirmationMark: {
+  affirmMark: {
     color: COLORS.accent,
     fontSize: 40,
     lineHeight: 36,
     fontWeight: '700',
     marginBottom: 6,
   },
-  affirmationText: {
+  affirmText: {
     color: COLORS.white,
     fontSize: 18,
     fontWeight: '500',
-    lineHeight: 26,
+    lineHeight: 27,
   },
   breathSection: {
     alignItems: 'center',
     marginBottom: 28,
   },
-  breathLabel: {
+  breathTitle: {
     color: COLORS.textMuted,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  breathCircle: {
+  circle: {
     width: 160,
     height: 160,
     borderRadius: 80,
@@ -180,43 +176,56 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 6,
   },
-  breathCircleActive: {
+  circleActive: {
     borderColor: COLORS.primary,
     backgroundColor: COLORS.cardAlt,
   },
-  breathPhase: {
+  circlePhase: {
     color: COLORS.text,
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'center',
   },
-  breathCount: {
+  circleCount: {
     color: COLORS.primary,
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
   },
   breathHint: {
     color: COLORS.textMuted,
     fontSize: 13,
   },
-  groundingCard: {
+  groundCard: {
     backgroundColor: COLORS.card,
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
     borderColor: COLORS.border,
+    gap: 14,
   },
-  groundingTitle: {
+  groundTitle: {
     color: COLORS.accent,
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
-    marginBottom: 12,
+    marginBottom: 4,
   },
-  groundingText: {
+  groundItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  groundNum: {
+    color: COLORS.primary,
+    fontSize: 20,
+    fontWeight: '700',
+    width: 24,
+    textAlign: 'center',
+  },
+  groundText: {
     color: COLORS.textSecondary,
     fontSize: 15,
-    lineHeight: 26,
+    lineHeight: 22,
   },
 });
