@@ -1,50 +1,114 @@
-# Welcome to your Expo app 👋
+# You. ☁️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A calming self-reflection and emotional wellness app designed to help users become more emotionally grounded, less reactive, and more intentional with their mental energy.
 
-## Get started
+Built with Expo and React Native, **You.** combines daily emotional regulation exercises, journaling, grounding reminders, and reflective prompts into a soft, minimalist wellness experience.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Features
 
-2. Start the app
+* 🌿 21-Day “Stay Unbothered” Challenge
+* ✨ Personalized greetings
+* 🧠 Emotional regulation exercises
+* 📝 Reflection notes & journaling
+* 🔔 Daily reminder notifications
+* 📚 Previous day challenge history
+* ☁️ Spiral reset / grounding screen
+* 💾 Persistent local storage with AsyncStorage
+* 🎨 Soft pastel wellness-inspired UI
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Tech Stack
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* Expo
+* React Native
+* TypeScript
+* Expo Router
+* AsyncStorage
+* Expo Notifications
+* StyleSheet
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## Color Palette
 
-When you're ready, run:
+* `#006d77`
+* `#353535`
+* `#ffffff`
+* `#8d99ae`
+* `#284b63`
+* `#b2967d`
+
+---
+
+## Getting Started
+
+### Install dependencies
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Start development server
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Run on device
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+* Install Expo Go on your phone
+* Scan the QR code from terminal
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## Build APK
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+eas build --platform android
+```
+
+---
+
+## Build iOS
+
+```bash
+eas build --platform ios
+```
+
+---
+
+## Project Structure
+
+```txt
+app/
+components/
+constants/
+utils/
+types/
+```
+
+---
+
+## Vision
+
+The goal of this app is not productivity.
+
+It’s peace.
+
+**You.** exists to help people:
+
+* stop catastrophizing small things
+* regulate emotional overwhelm
+* build healthier thought patterns
+* reconnect with themselves gently
+
+A soft place for overstimulated minds.
+
+---
+
+## Author
+
+Built with ☁️ by Cindy Kandie
