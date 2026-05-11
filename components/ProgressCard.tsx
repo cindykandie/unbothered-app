@@ -9,7 +9,7 @@ type Props = {
 export function ProgressCard({ completedDays, totalDays }: Props) {
   const completed = completedDays.length;
   const currentDay = Math.min(completed + 1, totalDays);
-  const streakDays = computeStreak(completedDays, totalDays);
+  const streak = computeStreak(completedDays);
 
   return (
     <View style={styles.card}>
@@ -17,62 +17,54 @@ export function ProgressCard({ completedDays, totalDays }: Props) {
         <Text style={styles.label}>Progress</Text>
         <Text style={styles.fraction}>
           <Text style={styles.fractionCount}>{completed}</Text>
-          <Text style={styles.fractionTotal}> / {totalDays}</Text>
+          <Text style={styles.fractionTotal}> / {totalDays} days</Text>
         </Text>
       </View>
 
       {/* 21-dot grid: 3 rows × 7 */}
-      <View style={styles.dotGrid}>
+      <View style={styles.dots}>
         {Array.from({ length: totalDays }, (_, i) => {
           const day = i + 1;
           const done = completedDays.includes(day);
-          const isCurrent = day === currentDay && completed < totalDays;
+          const current = day === currentDay && completed < totalDays;
           return (
             <View
               key={day}
-              style={[
-                styles.dot,
-                done && styles.dotDone,
-                isCurrent && styles.dotCurrent,
-              ]}
+              style={[styles.dot, done && styles.dotDone, current && styles.dotCurrent]}
             />
           );
         })}
       </View>
 
       {/* Stats */}
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{completed}</Text>
-          <Text style={styles.statLabel}>days done</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{totalDays - completed}</Text>
-          <Text style={styles.statLabel}>remaining</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{streakDays}</Text>
-          <Text style={styles.statLabel}>streak</Text>
-        </View>
+      <View style={styles.stats}>
+        <Stat value={completed} label="done" color={COLORS.primary} />
+        <View style={styles.div} />
+        <Stat value={totalDays - completed} label="remaining" color={COLORS.textSecondary} />
+        <View style={styles.div} />
+        <Stat value={streak} label="streak" color={COLORS.accent} />
       </View>
     </View>
   );
 }
 
-function computeStreak(completedDays: number[], total: number): number {
+function Stat({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function computeStreak(completedDays: number[]): number {
+  if (completedDays.length === 0) return 0;
   const sorted = [...completedDays].sort((a, b) => b - a);
-  if (sorted.length === 0) return 0;
   let streak = 0;
-  let expected = Math.min(sorted[0], total);
+  let expected = sorted[0];
   for (const day of sorted) {
-    if (day === expected) {
-      streak++;
-      expected--;
-    } else {
-      break;
-    }
+    if (day === expected) { streak++; expected--; }
+    else break;
   }
   return streak;
 }
@@ -85,6 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
+    marginTop: 8,
   },
   header: {
     flexDirection: 'row',
@@ -102,14 +95,14 @@ const styles = StyleSheet.create({
   fraction: {},
   fractionCount: {
     color: COLORS.primary,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   fractionTotal: {
     color: COLORS.textMuted,
-    fontSize: 14,
+    fontSize: 13,
   },
-  dotGrid: {
+  dots: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
@@ -131,7 +124,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.accent,
     borderWidth: 2,
   },
-  statsRow: {
+  stats: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 16,
@@ -144,16 +137,15 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   statValue: {
-    color: COLORS.text,
     fontSize: 24,
     fontWeight: '700',
   },
   statLabel: {
     color: COLORS.textMuted,
     fontSize: 11,
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
-  statDivider: {
+  div: {
     width: 1,
     height: 36,
     backgroundColor: COLORS.border,

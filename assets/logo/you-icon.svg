@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  You. — App Icon
+  1024 × 1024 — export at this size for App Store / Play Store.
+  Platform tooling will apply the corner mask; rx/ry are included for
+  preview purposes only.
+-->
+<svg
+  width="1024"
+  height="1024"
+  viewBox="0 0 1024 1024"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="#0D1B2A"/>
+
+  <!-- Subtle inner ring — gives the icon quiet depth -->
+  <rect
+    x="40" y="40"
+    width="944" height="944"
+    rx="188" ry="188"
+    fill="none"
+    stroke="#253D54"
+    stroke-width="1.5"
+  />
+
+  <!-- Wordmark -->
+  <text
+    x="512"
+    y="590"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', Cambria, serif"
+    font-size="260"
+    font-style="italic"
+    font-weight="300"
+    letter-spacing="8"
+    fill="#E8EDF2"
+  >You<tspan
+      fill="#b2967d"
+      font-weight="600"
+      font-style="italic"
+      letter-spacing="0"
+    >.</tspan></text>
+</svg>

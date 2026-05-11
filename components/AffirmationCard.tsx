@@ -6,7 +6,7 @@ type Props = {
   affirmation: Affirmation;
 };
 
-export function QuoteCard({ affirmation }: Props) {
+export function AffirmationCard({ affirmation }: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.mark}>"</Text>
@@ -20,9 +20,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardAlt,
     borderRadius: 20,
     paddingHorizontal: 24,
-    paddingTop: 8,
+    paddingTop: 4,
     paddingBottom: 24,
-    marginBottom: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderLeftWidth: 4,
@@ -33,12 +32,12 @@ const styles = StyleSheet.create({
     fontSize: 52,
     lineHeight: 56,
     fontWeight: '700',
-    marginBottom: -4,
   },
   text: {
     color: COLORS.text,
     fontSize: 18,
     fontWeight: '500',
     lineHeight: 27,
+    marginTop: -8,
   },
 });
