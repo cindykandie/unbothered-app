@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   circleActive: {
     borderColor: COLORS.primary,
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: COLORS.cardElevated,
   },
   circlePhase: {
     color: COLORS.text,

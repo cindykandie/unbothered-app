@@ -1,68 +1,88 @@
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { DrawerMenu } from '@/components/DrawerMenu';
-import { COLORS } from '@/constants/colors';
-import { challenges } from '@/constants/challenges';
-import { getUserName, getAllNotes } from '@/utils/storage';
+import { ReflectionCard } from '@/components/ReflectionCard';
+import { COLORS, GRADIENTS, RADIUS } from '@/constants/colors';
+import { getUserName, getCombinedNotes } from '@/utils/storage';
+import type { CombinedNote } from '@/utils/storage';
 
-type NoteEntry = {
-  day: number;
-  title: string;
-  text: string;
-};
+type Filter = 'all' | 'unbothered' | 'softening';
 
 export default function NotesScreen() {
-  const router = useRouter();
   const [userName, setUserName] = useState('');
-  const [entries, setEntries] = useState<NoteEntry[]>([]);
+  const [allNotes, setAllNotes] = useState<CombinedNote[]>([]);
+  const [filter, setFilter] = useState<Filter>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const [name, allNotes] = await Promise.all([getUserName(), getAllNotes()]);
-      setUserName(name ?? '');
-      const list = Object.entries(allNotes)
-        .filter(([, text]) => text.trim().length > 0)
-        .map(([day, text]) => ({
-          day: parseInt(day),
-          title: challenges[parseInt(day) - 1]?.title ?? '',
-          text,
-        }))
-        .sort((a, b) => a.day - b.day);
-      setEntries(list);
-    }
-    load();
-  }, []);
+  async function load() {
+    const [name, notes] = await Promise.all([getUserName(), getCombinedNotes()]);
+    setUserName(name ?? '');
+    setAllNotes(notes);
+  }
+
+  useEffect(() => { load(); }, []);
+  useFocusEffect(useCallback(() => { load(); }, []));
+
+  const filtered = filter === 'all'
+    ? allNotes
+    : allNotes.filter((n) => n.challengeId === filter);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <LinearGradient
+        colors={GRADIENTS.screenMain}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
+
       <Header title="Reflections" onMenuPress={() => setDrawerOpen(true)} />
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.heading}>Your Reflections</Text>
 
-        {entries.length === 0 ? (
+        {/* Filter pills */}
+        <View style={styles.filterRow}>
+          {(['all', 'unbothered', 'softening'] as Filter[]).map((f) => {
+            const active = filter === f;
+            const color = f === 'unbothered' ? COLORS.primary : f === 'softening' ? COLORS.accent : COLORS.textSecondary;
+            return (
+              <TouchableOpacity
+                key={f}
+                style={[styles.pill, active && { borderColor: color + '55', backgroundColor: color + '14' }]}
+                onPress={() => setFilter(f)}
+                activeOpacity={0.78}
+              >
+                <Text style={[styles.pillText, active && { color }]}>
+                  {f === 'all' ? 'All' : f === 'unbothered' ? 'Unbothered' : 'Softening'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {filtered.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptySymbol}>◇</Text>
             <Text style={styles.emptyTitle}>Nothing here yet</Text>
             <Text style={styles.emptyBody}>
-              Your reflections will appear here as you write them on each challenge day.
+              Your reflections will appear here as you write them across both journeys.
             </Text>
           </View>
         ) : (
-          entries.map((entry) => (
-            <View key={entry.day} style={styles.card}>
-              <Text style={styles.cardDay}>Day {entry.day}</Text>
-              <Text style={styles.cardTitle}>{entry.title}</Text>
-              <Text style={styles.cardText}>{entry.text}</Text>
-            </View>
+          filtered.map((entry, i) => (
+            <ReflectionCard
+              key={`${entry.challengeId}-${entry.day}-${i}`}
+              challengeLabel={entry.challengeLabel}
+              challengeId={entry.challengeId}
+              day={entry.day}
+              text={entry.text}
+            />
           ))
         )}
       </ScrollView>
@@ -77,36 +97,49 @@ export default function NotesScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    paddingHorizontal: 24,
-    paddingBottom: 48,
-  },
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { paddingHorizontal: 24, paddingBottom: 56 },
   heading: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.3,
-    marginTop: 4,
+    letterSpacing: -0.4,
+    marginTop: 6,
+    marginBottom: 20,
+    lineHeight: 35,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
     marginBottom: 24,
   },
+  pill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  pillText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '500',
+  },
   empty: {
-    marginTop: 60,
+    marginTop: 70,
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 24,
   },
   emptySymbol: {
     color: COLORS.textMuted,
-    fontSize: 36,
+    fontSize: 30,
     marginBottom: 4,
   },
   emptyTitle: {
     color: COLORS.textSecondary,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
   },
   emptyBody: {
@@ -114,34 +147,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
-  },
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.accent,
-    gap: 6,
-  },
-  cardDay: {
-    color: COLORS.primary,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
-  cardTitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cardText: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    lineHeight: 22,
-    marginTop: 4,
   },
 });

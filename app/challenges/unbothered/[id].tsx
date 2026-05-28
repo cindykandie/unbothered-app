@@ -1,15 +1,17 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { NoteInput } from '@/components/NoteInput';
-import { COLORS } from '@/constants/colors';
+import { CompletionButton } from '@/components/CompletionButton';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
 import { getCompletedDays, saveCompletedDay, getNote, saveNote } from '@/utils/storage';
 
-export default function ChallengeDetailScreen() {
+export default function UnbotheredDayScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const day = parseInt(id as string, 10);
   const challenge = challenges[day - 1];
@@ -20,10 +22,7 @@ export default function ChallengeDetailScreen() {
 
   useEffect(() => {
     async function load() {
-      const [days, savedNote] = await Promise.all([
-        getCompletedDays(),
-        getNote(day),
-      ]);
+      const [days, savedNote] = await Promise.all([getCompletedDays(), getNote(day)]);
       setCompletedDays(days);
       setNote(savedNote);
     }
@@ -44,7 +43,6 @@ export default function ChallengeDetailScreen() {
   }
 
   if (!challenge) return null;
-
   const isCompleted = completedDays.includes(day);
 
   return (
@@ -56,9 +54,9 @@ export default function ChallengeDetailScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Day badge */}
+        {/* Meta */}
         <View style={styles.meta}>
-          <Text style={styles.dayLabel}>Day {challenge.day} of 21</Text>
+          <Text style={styles.dayLabel}>Unbothered · Day {challenge.day}</Text>
           {isCompleted && (
             <View style={styles.doneBadge}>
               <Text style={styles.doneBadgeText}>✓ Complete</Text>
@@ -66,76 +64,68 @@ export default function ChallengeDetailScreen() {
           )}
         </View>
 
-        {/* Title */}
         <Text style={styles.title}>{challenge.title}</Text>
 
-        {/* Description */}
-        <View style={styles.descCard}>
-          <Text style={styles.descLabel}>The challenge</Text>
-          <Text style={styles.description}>{challenge.description}</Text>
+        {/* Challenge card */}
+        <View style={[styles.card, SHADOWS.soft]}>
+          <Text style={styles.cardLabel}>Today's practice</Text>
+          <Text style={styles.cardText}>{challenge.description}</Text>
         </View>
 
-        {/* Reflection prompt */}
-        <View style={styles.promptCard}>
-          <Text style={styles.promptLabel}>Reflect on this</Text>
-          <Text style={styles.prompt}>{challenge.reflectionPrompt}</Text>
-        </View>
-
-        {/* Note input */}
-        <View style={styles.noteSection}>
-          <NoteInput
-            value={note}
-            onChange={(text) => { setNote(text); setNoteSaved(false); }}
-            onSave={handleSaveNote}
-            saved={noteSaved}
-          />
-        </View>
-
-        {/* Mark complete */}
-        {!isCompleted && (
-          <TouchableOpacity
-            style={styles.completeBtn}
-            onPress={handleMarkComplete}
-            activeOpacity={0.8}
+        {/* Reflection */}
+        <View style={[styles.reflectWrapper]}>
+          <LinearGradient
+            colors={['#1D3557', '#162032']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.reflectGradient}
           >
-            <Text style={styles.completeBtnText}>Mark Complete</Text>
-          </TouchableOpacity>
-        )}
+            <View style={styles.reflectHeader}>
+              <View style={styles.reflectDot} />
+              <Text style={styles.reflectLabel}>Reflect on this</Text>
+            </View>
+            <Text style={styles.reflectText}>{challenge.reflectionPrompt}</Text>
+          </LinearGradient>
+        </View>
+
+        {/* Notes */}
+        <NoteInput
+          value={note}
+          onChange={(text) => { setNote(text); setNoteSaved(false); }}
+          onSave={handleSaveNote}
+          saved={noteSaved}
+        />
+
+        {/* Complete */}
+        <CompletionButton isCompleted={isCompleted} onPress={handleMarkComplete} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    paddingHorizontal: 24,
-    paddingBottom: 56,
-  },
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { paddingHorizontal: 24, paddingBottom: 56, gap: 16 },
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginTop: 8,
-    marginBottom: 10,
   },
   dayLabel: {
     color: COLORS.primary,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.3,
     textTransform: 'uppercase',
   },
   doneBadge: {
-    backgroundColor: COLORS.cardElevated,
+    backgroundColor: COLORS.primaryDim,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.borderAccent,
   },
   doneBadgeText: {
     color: COLORS.primary,
@@ -144,70 +134,64 @@ const styles = StyleSheet.create({
   },
   title: {
     color: COLORS.text,
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
-    letterSpacing: -0.5,
-    marginBottom: 24,
-    lineHeight: 34,
+    letterSpacing: -0.6,
+    lineHeight: 37,
   },
-  descCard: {
+  card: {
     backgroundColor: COLORS.card,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 14,
+    borderRadius: RADIUS.xl,
+    padding: 22,
     borderWidth: 1,
     borderColor: COLORS.border,
-    gap: 8,
+    gap: 10,
   },
-  descLabel: {
+  cardLabel: {
     color: COLORS.textMuted,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
-  description: {
+  cardText: {
     color: COLORS.text,
     fontSize: 16,
-    lineHeight: 25,
+    lineHeight: 27,
   },
-  promptCard: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 24,
+  reflectWrapper: {
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(91,192,190,0.15)',
+  },
+  reflectGradient: {
+    padding: 24,
+    gap: 14,
+  },
+  reflectHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  promptLabel: {
+  reflectDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.accent,
+  },
+  reflectLabel: {
     color: COLORS.accent,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
-  prompt: {
-    color: COLORS.white,
-    fontSize: 16,
-    lineHeight: 25,
+  reflectText: {
+    color: COLORS.text,
+    fontSize: 17,
+    lineHeight: 27,
     fontStyle: 'italic',
-  },
-  noteSection: {
-    marginBottom: 24,
-  },
-  completeBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  completeBtnText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
   },
 });

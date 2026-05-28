@@ -16,10 +16,15 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="spiral" options={{ animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="previous-days" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="return" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="notes" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="challenge/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/unbothered/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/unbothered/previous-days" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/unbothered/[id]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/softening-the-need-to-win/index" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/softening-the-need-to-win/previous-days" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="challenges/softening-the-need-to-win/[id]" options={{ animation: 'slide_from_right' }} />
       </Stack>
       <StatusBar style="light" />
     </GestureHandlerRootView>

@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 
 type Props = {
   completedDays: number[];
@@ -12,7 +13,7 @@ export function ProgressCard({ completedDays, totalDays }: Props) {
   const streak = computeStreak(completedDays);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, SHADOWS.soft]}>
       <View style={styles.header}>
         <Text style={styles.label}>Progress</Text>
         <Text style={styles.fraction}>
@@ -21,22 +22,26 @@ export function ProgressCard({ completedDays, totalDays }: Props) {
         </Text>
       </View>
 
-      {/* 21-dot grid: 3 rows × 7 */}
       <View style={styles.dots}>
         {Array.from({ length: totalDays }, (_, i) => {
           const day = i + 1;
           const done = completedDays.includes(day);
           const current = day === currentDay && completed < totalDays;
-          return (
+          return done ? (
+            <LinearGradient
+              key={day}
+              colors={[COLORS.primary, COLORS.primaryLight]}
+              style={[styles.dot, current && styles.dotCurrent]}
+            />
+          ) : (
             <View
               key={day}
-              style={[styles.dot, done && styles.dotDone, current && styles.dotCurrent]}
+              style={[styles.dot, styles.dotEmpty, current && styles.dotCurrent]}
             />
           );
         })}
       </View>
 
-      {/* Stats */}
       <View style={styles.stats}>
         <Stat value={completed} label="done" color={COLORS.primary} />
         <View style={styles.div} />
@@ -72,8 +77,8 @@ function computeStreak(completedDays: number[]): number {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: RADIUS.xl,
+    padding: 22,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -83,7 +88,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   label: {
     color: COLORS.textMuted,
@@ -112,22 +117,20 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: COLORS.cardAlt,
+  },
+  dotEmpty: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  dotDone: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
   dotCurrent: {
-    borderColor: COLORS.accent,
     borderWidth: 2,
+    borderColor: COLORS.accent,
   },
   stats: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: 18,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
   },
