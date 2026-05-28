@@ -22,9 +22,9 @@ type DrawerItem = {
 
 const ITEMS: DrawerItem[] = [
   { label: 'Home', icon: 'home-outline', route: '/' },
-  { label: 'Previous Days', icon: 'calendar-outline', route: '/previous-days' },
+  { label: 'Challenges', icon: 'grid-outline', route: '/challenges' },
+  { label: 'Return', icon: 'leaf-outline', route: '/return' },
   { label: 'Notes', icon: 'journal-outline', route: '/notes' },
-  { label: 'Spiral Reset', icon: 'leaf-outline', route: '/spiral' },
 ];
 
 type Props = {

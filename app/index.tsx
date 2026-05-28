@@ -1,17 +1,22 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 import { Header } from '@/components/Header';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AffirmationCard } from '@/components/AffirmationCard';
-import { ChallengeCard } from '@/components/ChallengeCard';
-import { ProgressCard } from '@/components/ProgressCard';
+import { ContinueChallengeCard } from '@/components/ContinueChallengeCard';
 import { COLORS } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
+import { competitionChallenges } from '@/constants/competitionChallenge';
 import { getDailyAffirmation } from '@/constants/affirmations';
-import { getUserName, getCompletedDays, saveCompletedDay } from '@/utils/storage';
+import {
+  getUserName,
+  getCompletedDays,
+  getCompetitionProgress,
+} from '@/utils/storage';
 import { getGreeting, getDateLabel } from '@/utils/greetings';
 import { scheduleDailyReminder } from '@/utils/notifications';
 
@@ -20,39 +25,38 @@ const TOTAL = 21;
 export default function HomeScreen() {
   const router = useRouter();
   const [userName, setUserName] = useState('');
-  const [completedDays, setCompletedDays] = useState<number[]>([]);
+  const [unbotheredDays, setUnbotheredDays] = useState<number[]>([]);
+  const [softeningDays, setSofteningDays] = useState<number[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const affirmation = getDailyAffirmation();
 
-  useEffect(() => {
-    async function init() {
-      const name = await getUserName();
-      if (!name) {
-        router.replace('/onboarding');
-        return;
-      }
-      const days = await getCompletedDays();
-      setUserName(name);
-      setCompletedDays(days);
-      setLoading(false);
-      scheduleDailyReminder();
+  async function load() {
+    const name = await getUserName();
+    if (!name) {
+      router.replace('/onboarding');
+      return;
     }
-    init();
-  }, []);
-
-  async function handleMarkComplete() {
-    if (todayDone || allDone) return;
-    const updated = [...completedDays, currentDay];
-    setCompletedDays(updated);
-    await saveCompletedDay(currentDay);
+    const [uDays, sProgress] = await Promise.all([
+      getCompletedDays(),
+      getCompetitionProgress(),
+    ]);
+    setUserName(name);
+    setUnbotheredDays(uDays);
+    setSofteningDays(sProgress.completedDays);
+    setLoading(false);
   }
 
-  const currentDay = Math.min(completedDays.length + 1, TOTAL);
-  const allDone = completedDays.length >= TOTAL;
-  const todayDone = completedDays.includes(currentDay);
-  const challenge = challenges[currentDay - 1];
+  useEffect(() => {
+    load();
+    scheduleDailyReminder();
+  }, []);
+
+  useFocusEffect(useCallback(() => { load(); }, []));
+
+  const uDay = Math.min(unbotheredDays.length + 1, TOTAL);
+  const sDay = Math.min(softeningDays.length + 1, TOTAL);
 
   if (loading) return <View style={styles.safe} />;
 
@@ -60,65 +64,67 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <Header onMenuPress={() => setDrawerOpen(true)} />
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Greeting */}
         <View style={styles.greeting}>
           <Text style={styles.greetingText}>{getGreeting(userName)}</Text>
           <Text style={styles.date}>{getDateLabel()}</Text>
         </View>
 
-        {/* Daily affirmation */}
+        {/* Affirmation */}
         <AffirmationCard affirmation={affirmation} />
 
-        <View style={styles.spacer} />
+        {/* Challenges */}
+        <Text style={styles.sectionLabel}>Your journeys</Text>
 
-        {/* Today's challenge */}
-        {!allDone ? (
-          <>
-            <Text style={styles.sectionLabel}>Today's challenge</Text>
-            <ChallengeCard
-              challenge={challenge}
-              isDone={todayDone}
-              onPress={() => router.push(`/challenge/${currentDay}`)}
-            />
-          </>
-        ) : (
-          <View style={styles.completeCard}>
-            <Text style={styles.completeSymbol}>✦</Text>
-            <Text style={styles.completeTitle}>You did it.</Text>
-            <Text style={styles.completeBody}>
-              21 days of choosing your peace. That took real courage.
-            </Text>
-          </View>
-        )}
+        <ContinueChallengeCard
+          challengeTitle="Unbothered"
+          currentDay={uDay}
+          totalDays={TOTAL}
+          dayTitle={challenges[uDay - 1]?.title ?? 'Journey complete'}
+          completedDays={unbotheredDays.length}
+          onPress={() => router.push(`/challenges/unbothered/${uDay}` as any)}
+        />
 
-        {/* Progress */}
-        <ProgressCard completedDays={completedDays} totalDays={TOTAL} />
+        <ContinueChallengeCard
+          challengeTitle="Softening the Need to Win"
+          currentDay={sDay}
+          totalDays={TOTAL}
+          dayTitle={competitionChallenges[sDay - 1]?.title ?? 'Journey complete'}
+          completedDays={softeningDays.length}
+          onPress={() => router.push(`/challenges/softening-the-need-to-win/${sDay}` as any)}
+        />
 
-        {/* Actions */}
-        {!allDone && (
+        {/* Quick access */}
+        <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>Quick access</Text>
+        <View style={styles.quickRow}>
           <TouchableOpacity
-            style={[styles.primaryBtn, todayDone && styles.primaryBtnDone]}
-            onPress={handleMarkComplete}
-            disabled={todayDone}
-            activeOpacity={0.8}
+            style={styles.quickBtn}
+            onPress={() => router.push('/challenges' as any)}
+            activeOpacity={0.75}
           >
-            <Text style={[styles.primaryBtnText, todayDone && styles.primaryBtnTextDone]}>
-              {todayDone ? '✓  Completed today' : 'Mark Complete'}
-            </Text>
+            <Ionicons name="grid-outline" size={20} color={COLORS.primary} />
+            <Text style={styles.quickBtnText}>Challenges</Text>
           </TouchableOpacity>
-        )}
 
-        <TouchableOpacity
-          style={styles.spiralBtn}
-          onPress={() => router.push('/spiral')}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.spiralBtnText}>I'm Spiraling</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => router.push('/return' as any)}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="leaf-outline" size={20} color={COLORS.accent} />
+            <Text style={styles.quickBtnText}>Return</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickBtn}
+            onPress={() => router.push('/notes' as any)}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="journal-outline" size={20} color={COLORS.textSecondary} />
+            <Text style={styles.quickBtnText}>Notes</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       <DrawerMenu
@@ -131,14 +137,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scroll: {
-    paddingHorizontal: 24,
-    paddingBottom: 48,
-  },
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { paddingHorizontal: 24, paddingBottom: 56 },
   greeting: {
     marginTop: 4,
     marginBottom: 24,
@@ -154,79 +154,35 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: 14,
   },
-  spacer: { height: 4 },
   sectionLabel: {
     color: COLORS.textMuted,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
-    marginBottom: 12,
-    marginTop: 24,
+    marginBottom: 14,
+    marginTop: 28,
   },
-  completeCard: {
+  sectionLabelSpaced: {
+    marginTop: 32,
+  },
+  quickRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  quickBtn: {
+    flex: 1,
     backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  completeSymbol: {
-    color: COLORS.accent,
-    fontSize: 30,
-    marginBottom: 12,
-  },
-  completeTitle: {
-    color: COLORS.text,
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  completeBody: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  primaryBtn: {
-    backgroundColor: COLORS.primary,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  primaryBtnDone: {
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  primaryBtnText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  primaryBtnTextDone: {
-    color: COLORS.primary,
-  },
-  spiralBtn: {
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
+    gap: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  spiralBtnText: {
+  quickBtnText: {
     color: COLORS.textSecondary,
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '500',
   },
 });
