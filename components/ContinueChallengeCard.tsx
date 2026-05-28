@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 
 type Props = {
   challengeTitle: string;
@@ -23,45 +24,71 @@ export function ContinueChallengeCard({
   const isFinished = completedDays >= totalDays;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.header}>
-        <Text style={styles.challengeLabel}>{challengeTitle}</Text>
-        {isFinished ? (
-          <View style={styles.donePill}>
-            <Text style={styles.donePillText}>✓ Complete</Text>
-          </View>
-        ) : (
-          <Text style={styles.dayLabel}>Day {currentDay} of {totalDays}</Text>
-        )}
-      </View>
-
-      <Text style={styles.dayTitle} numberOfLines={2}>
-        {isFinished ? 'Journey complete' : dayTitle}
-      </Text>
-
-      <View style={styles.barRow}>
-        <View style={styles.barTrack}>
-          <View style={[styles.barFill, { width: `${pct}%` as any }]} />
+    <TouchableOpacity
+      style={[styles.wrapper, SHADOWS.card]}
+      onPress={onPress}
+      activeOpacity={0.82}
+    >
+      <LinearGradient
+        colors={['#1A2744', '#151E38']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
+      >
+        {/* Top row */}
+        <View style={styles.header}>
+          <Text style={styles.challengeLabel}>{challengeTitle}</Text>
+          {isFinished ? (
+            <View style={styles.donePill}>
+              <Ionicons name="checkmark" size={10} color={COLORS.primary} />
+              <Text style={styles.donePillText}>Complete</Text>
+            </View>
+          ) : (
+            <View style={styles.dayPill}>
+              <Text style={styles.dayCount}>Day {currentDay} · {totalDays}</Text>
+            </View>
+          )}
         </View>
-        <Ionicons
-          name={isFinished ? 'checkmark-circle' : 'arrow-forward-circle-outline'}
-          size={22}
-          color={COLORS.primary}
-        />
-      </View>
+
+        {/* Title + arrow */}
+        <View style={styles.titleRow}>
+          <Text style={styles.dayTitle} numberOfLines={1}>
+            {isFinished ? 'Journey complete' : dayTitle}
+          </Text>
+          <Ionicons
+            name={isFinished ? 'checkmark-circle' : 'arrow-forward'}
+            size={18}
+            color={COLORS.primary}
+          />
+        </View>
+
+        {/* Progress bar */}
+        <View style={styles.barTrack}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.primaryLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.barFill, { width: `${Math.max(pct, pct > 0 ? 3 : 0)}%` as any }]}
+          />
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 20,
-    padding: 20,
+  wrapper: {
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 10,
-    marginBottom: 10,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 12,
+  },
+  gradient: {
+    paddingHorizontal: 22,
+    paddingTop: 18,
+    paddingBottom: 20,
+    gap: 12,
   },
   header: {
     flexDirection: 'row',
@@ -69,54 +96,64 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   challengeLabel: {
-    color: COLORS.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.2,
+    color: COLORS.textSecondary,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
-  dayLabel: {
+  dayPill: {
+    backgroundColor: 'rgba(91,192,190,0.15)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(91,192,190,0.25)',
+  },
+  dayCount: {
     color: COLORS.primary,
     fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   donePill: {
-    backgroundColor: COLORS.primary + '22',
-    borderRadius: 6,
-    paddingHorizontal: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(91,192,190,0.15)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: COLORS.primary + '44',
+    borderColor: 'rgba(91,192,190,0.25)',
   },
   donePillText: {
     color: COLORS.primary,
     fontSize: 11,
     fontWeight: '600',
   },
-  dayTitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: -0.1,
-    lineHeight: 22,
-  },
-  barRow: {
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 12,
-    marginTop: 2,
+  },
+  dayTitle: {
+    flex: 1,
+    color: COLORS.text,
+    fontSize: 10,
+    fontWeight: '400',
+    letterSpacing: -0.2,
+    lineHeight: 23,
   },
   barTrack: {
-    flex: 1,
-    height: 4,
-    backgroundColor: COLORS.cardAlt,
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 2,
     overflow: 'hidden',
   },
   barFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
     borderRadius: 2,
   },
 });

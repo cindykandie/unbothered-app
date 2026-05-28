@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS } from '@/constants/colors';
 
 type Props = {
   challengeLabel: string;
@@ -10,29 +10,42 @@ type Props = {
 
 export function ReflectionCard({ challengeLabel, challengeId, day, text }: Props) {
   const accentColor = challengeId === 'unbothered' ? COLORS.primary : COLORS.accent;
+  const bgColor = challengeId === 'unbothered'
+    ? 'rgba(91,192,190,0.06)'
+    : 'rgba(224,164,88,0.06)';
+  const borderColor = challengeId === 'unbothered'
+    ? 'rgba(91,192,190,0.18)'
+    : 'rgba(224,164,88,0.18)';
 
   return (
-    <View style={[styles.card, { borderLeftColor: accentColor }]}>
-      <View style={styles.meta}>
-        <Text style={[styles.challengeTag, { color: accentColor }]}>
-          {challengeLabel}
-        </Text>
-        <Text style={styles.dayTag}>· Day {day}</Text>
+    <View style={[styles.card, { backgroundColor: bgColor, borderColor }]}>
+      <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
+      <View style={styles.inner}>
+        <View style={styles.meta}>
+          <Text style={[styles.challengeTag, { color: accentColor }]}>{challengeLabel}</Text>
+          <Text style={styles.dayTag}>· Day {day}</Text>
+        </View>
+        <Text style={styles.text}>{text}</Text>
       </View>
-      <Text style={styles.text}>{text}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: RADIUS.lg,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderLeftWidth: 4,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  accentBar: {
+    width: 3,
+    opacity: 0.7,
+  },
+  inner: {
+    flex: 1,
+    padding: 18,
     gap: 8,
   },
   meta: {
@@ -50,7 +63,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: 11,
     fontWeight: '500',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   text: {
     color: COLORS.textSecondary,

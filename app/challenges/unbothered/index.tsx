@@ -2,11 +2,12 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-nati
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Header } from '@/components/Header';
 import { ProgressTracker } from '@/components/ProgressTracker';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
 import { getCompletedDays } from '@/utils/storage';
 
@@ -30,17 +31,21 @@ export default function UnbotheredOverviewScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <LinearGradient
+        colors={['#070E1F', '#0B132B', '#1C2541']}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.3, y: 0 }}
+        end={{ x: 0.7, y: 1 }}
+      />
       <Header showBack />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <Text style={styles.heading}>Unbothered</Text>
-        <Text style={styles.sub}>
-          21 days of emotional regulation and nervous system calm.
-        </Text>
+        <View style={styles.hero}>
+          <Text style={styles.heading}>Unbothered</Text>
+          <Text style={styles.sub}>21 days of emotional regulation and nervous system calm.</Text>
+        </View>
 
-        {/* Intro card */}
-        <View style={styles.introCard}>
+        <View style={[styles.introCard, SHADOWS.soft]}>
           <Text style={styles.introLabel}>About this challenge</Text>
           <Text style={styles.introText}>
             This journey invites you to practice presence, reduce reactivity, and
@@ -49,28 +54,29 @@ export default function UnbotheredOverviewScreen() {
           </Text>
         </View>
 
-        {/* Progress */}
         <Text style={styles.sectionLabel}>Your progress</Text>
-        <ProgressTracker
-          completedDays={completedDays}
-          totalDays={TOTAL}
-          streak={0}
-        />
+        <ProgressTracker completedDays={completedDays} totalDays={TOTAL} streak={0} />
 
-        {/* Continue button */}
         <View style={styles.spacer} />
 
         {!allDone ? (
           <TouchableOpacity
-            style={styles.continueBtn}
+            style={[styles.continueBtn, SHADOWS.glow(COLORS.primary)]}
             onPress={() => router.push(`/challenges/unbothered/${currentDay}` as any)}
-            activeOpacity={0.82}
+            activeOpacity={0.84}
           >
-            <View style={styles.continueBtnLeft}>
-              <Text style={styles.continueBtnLabel}>Continue · Day {currentDay}</Text>
-              <Text style={styles.continueBtnTitle}>{currentChallenge.title}</Text>
-            </View>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.primaryLight]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.continueBtnInner}
+            >
+              <View>
+                <Text style={styles.continueBtnLabel}>Continue · Day {currentDay}</Text>
+                <Text style={styles.continueBtnTitle}>{currentChallenge.title}</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color={COLORS.backgroundDeep} />
+            </LinearGradient>
           </TouchableOpacity>
         ) : (
           <View style={styles.completedBanner}>
@@ -79,18 +85,16 @@ export default function UnbotheredOverviewScreen() {
           </View>
         )}
 
-        {/* Previous days link */}
         <TouchableOpacity
           style={styles.prevBtn}
           onPress={() => router.push('/challenges/unbothered/previous-days' as any)}
-          activeOpacity={0.7}
+          activeOpacity={0.75}
         >
           <Text style={styles.prevBtnText}>View all 21 days</Text>
           <Ionicons name="chevron-forward" size={14} color={COLORS.textMuted} />
         </TouchableOpacity>
 
-        {/* Calming quote */}
-        <View style={styles.quoteCard}>
+        <View style={[styles.quoteCard]}>
           <Text style={styles.quoteMark}>"</Text>
           <Text style={styles.quoteText}>
             You don't have to earn your rest. You don't have to justify your peace.
@@ -101,26 +105,26 @@ export default function UnbotheredOverviewScreen() {
   );
 }
 
+const { backgroundDeep, primary, primaryLight } = COLORS;
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { paddingHorizontal: 24, paddingBottom: 56 },
+  hero: { paddingTop: 8, paddingBottom: 24, gap: 8 },
   heading: {
     color: COLORS.text,
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: '700',
-    letterSpacing: -0.5,
-    marginTop: 8,
-    marginBottom: 6,
+    letterSpacing: -0.6,
   },
   sub: {
     color: COLORS.textSecondary,
     fontSize: 15,
     lineHeight: 23,
-    marginBottom: 24,
   },
   introCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     padding: 22,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -147,46 +151,43 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 14,
   },
-  spacer: { height: 20 },
+  spacer: { height: 22 },
   continueBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 18,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  continueBtnInner: {
     paddingVertical: 18,
     paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    elevation: 6,
   },
-  continueBtnLeft: { gap: 3 },
   continueBtnLabel: {
-    color: COLORS.white + 'cc',
+    color: COLORS.backgroundDeep + 'cc',
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   continueBtnTitle: {
-    color: COLORS.white,
+    color: COLORS.backgroundDeep,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    marginTop: 3,
   },
   completedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: COLORS.card,
-    borderRadius: 18,
+    backgroundColor: COLORS.cardAccent,
+    borderRadius: RADIUS.lg,
     paddingVertical: 18,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: COLORS.primary + '55',
+    borderColor: COLORS.borderAccent,
   },
   completedBannerText: {
     color: COLORS.primary,
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.border,
     marginBottom: 28,
@@ -210,21 +211,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   quoteCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 18,
+    backgroundColor: COLORS.cardWarm,
+    borderRadius: RADIUS.xl,
     padding: 22,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.accent,
+    borderColor: COLORS.borderWarm,
     gap: 8,
   },
   quoteMark: {
     color: COLORS.accent,
     fontSize: 32,
-    lineHeight: 26,
+    lineHeight: 28,
     fontWeight: '700',
-    opacity: 0.6,
+    opacity: 0.65,
   },
   quoteText: {
     color: COLORS.textSecondary,

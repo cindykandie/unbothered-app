@@ -10,20 +10,22 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, GRADIENTS, RADIUS, SPACING } from '@/constants/colors';
 
-const DRAWER_WIDTH = 280;
+const DRAWER_WIDTH = 290;
 
 type DrawerItem = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   route: string;
+  accent?: string;
 };
 
 const ITEMS: DrawerItem[] = [
   { label: 'Home', icon: 'home-outline', route: '/' },
-  { label: 'Challenges', icon: 'grid-outline', route: '/challenges' },
-  { label: 'Return', icon: 'leaf-outline', route: '/return' },
+  { label: 'Challenges', icon: 'grid-outline', route: '/challenges', accent: COLORS.primary },
+  { label: 'Return', icon: 'leaf-outline', route: '/return', accent: COLORS.accentWarm },
   { label: 'Notes', icon: 'journal-outline', route: '/notes' },
 ];
 
@@ -50,13 +52,13 @@ export function DrawerMenu({ isOpen, onClose, userName }: Props) {
     Animated.parallel([
       Animated.timing(translateX, {
         toValue: isOpen ? 0 : -DRAWER_WIDTH,
-        duration: isOpen ? 280 : 220,
+        duration: isOpen ? 300 : 230,
         easing: isOpen ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(opacity, {
-        toValue: isOpen ? 0.6 : 0,
-        duration: isOpen ? 280 : 220,
+        toValue: isOpen ? 0.65 : 0,
+        duration: isOpen ? 300 : 230,
         useNativeDriver: true,
       }),
     ]).start(({ finished }) => {
@@ -73,38 +75,40 @@ export function DrawerMenu({ isOpen, onClose, userName }: Props) {
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      {/* Backdrop */}
       <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, { opacity }]}>
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          onPress={onClose}
-          activeOpacity={1}
-        />
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} activeOpacity={1} />
       </Animated.View>
 
-      {/* Panel */}
       <Animated.View
         style={[
           styles.panel,
-          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 },
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 28 },
           { transform: [{ translateX }] },
         ]}
       >
+        <LinearGradient
+          colors={['#0F1A35', '#1C2541']}
+          style={StyleSheet.absoluteFill}
+        />
+
         {/* Brand */}
         <View style={styles.brand}>
           <Text style={styles.brandSymbol}>✦</Text>
-          <Text style={styles.brandName}>Unbothered</Text>
-          {userName && (
-            <Text style={styles.brandUser}>{userName}</Text>
-          )}
+          <Text style={styles.brandName}>You.</Text>
+          {userName && <Text style={styles.brandUser}>{userName}</Text>}
         </View>
 
         <View style={styles.divider} />
 
-        {/* Navigation items */}
+        {/* Nav */}
         <View style={styles.nav}>
           {ITEMS.map((item) => {
-            const active = pathname === item.route;
+            const active = pathname === item.route ||
+              (item.route !== '/' && pathname.startsWith(item.route));
+            const iconColor = active
+              ? (item.accent ?? COLORS.primary)
+              : COLORS.textSecondary;
+
             return (
               <TouchableOpacity
                 key={item.label}
@@ -112,12 +116,16 @@ export function DrawerMenu({ isOpen, onClose, userName }: Props) {
                 onPress={() => navigate(item.route)}
                 activeOpacity={0.7}
               >
-                <Ionicons
-                  name={item.icon}
-                  size={20}
-                  color={active ? COLORS.primary : COLORS.textSecondary}
-                />
-                <Text style={[styles.navLabel, active && styles.navLabelActive]}>
+                {active && (
+                  <View
+                    style={[
+                      styles.activeGlow,
+                      { backgroundColor: (item.accent ?? COLORS.primary) + '18' },
+                    ]}
+                  />
+                )}
+                <Ionicons name={item.icon} size={20} color={iconColor} />
+                <Text style={[styles.navLabel, active && styles.navLabelActive, active && { color: item.accent ?? COLORS.primary }]}>
                   {item.label}
                 </Text>
               </TouchableOpacity>
@@ -127,9 +135,7 @@ export function DrawerMenu({ isOpen, onClose, userName }: Props) {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Choose peace, every day.
-          </Text>
+          <Text style={styles.footerText}>Choose peace, every day.</Text>
         </View>
       </Animated.View>
     </View>
@@ -137,34 +143,32 @@ export function DrawerMenu({ isOpen, onClose, userName }: Props) {
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    backgroundColor: '#000',
-  },
+  backdrop: { backgroundColor: '#000' },
   panel: {
     position: 'absolute',
     left: 0,
     top: 0,
     bottom: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: COLORS.card,
     borderRightWidth: 1,
     borderRightColor: COLORS.border,
     paddingHorizontal: 24,
+    overflow: 'hidden',
   },
   brand: {
-    marginBottom: 24,
-    gap: 4,
+    marginBottom: 28,
+    gap: 5,
   },
   brandSymbol: {
     color: COLORS.accent,
-    fontSize: 22,
-    marginBottom: 4,
+    fontSize: 20,
+    marginBottom: 6,
   },
   brandName: {
     color: COLORS.text,
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   brandUser: {
     color: COLORS.textSecondary,
@@ -174,7 +178,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: COLORS.border,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   nav: {
     flex: 1,
@@ -184,12 +188,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingVertical: 14,
+    paddingVertical: 15,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
   },
-  navItemActive: {
-    backgroundColor: COLORS.cardAlt,
+  navItemActive: {},
+  activeGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: RADIUS.md,
   },
   navLabel: {
     color: COLORS.textSecondary,
@@ -197,11 +204,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   navLabelActive: {
-    color: COLORS.text,
     fontWeight: '600',
   },
   footer: {
-    paddingTop: 16,
+    paddingTop: 20,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
   },
@@ -209,5 +215,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: 13,
     fontStyle: 'italic',
+    letterSpacing: 0.2,
   },
 });

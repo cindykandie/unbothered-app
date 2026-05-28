@@ -2,13 +2,14 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-nati
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Header } from '@/components/Header';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AffirmationCard } from '@/components/AffirmationCard';
 import { ContinueChallengeCard } from '@/components/ContinueChallengeCard';
-import { COLORS } from '@/constants/colors';
+import { COLORS, GRADIENTS, RADIUS, SHADOWS, SPACING } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
 import { competitionChallenges } from '@/constants/competitionChallenge';
 import { getDailyAffirmation } from '@/constants/affirmations';
@@ -34,10 +35,7 @@ export default function HomeScreen() {
 
   async function load() {
     const name = await getUserName();
-    if (!name) {
-      router.replace('/onboarding');
-      return;
-    }
+    if (!name) { router.replace('/onboarding'); return; }
     const [uDays, sProgress] = await Promise.all([
       getCompletedDays(),
       getCompetitionProgress(),
@@ -48,11 +46,7 @@ export default function HomeScreen() {
     setLoading(false);
   }
 
-  useEffect(() => {
-    load();
-    scheduleDailyReminder();
-  }, []);
-
+  useEffect(() => { load(); scheduleDailyReminder(); }, []);
   useFocusEffect(useCallback(() => { load(); }, []));
 
   const uDay = Math.min(unbotheredDays.length + 1, TOTAL);
@@ -62,9 +56,20 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Ambient background gradient */}
+      <LinearGradient
+        colors={GRADIENTS.screenMain}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
+
       <Header onMenuPress={() => setDrawerOpen(true)} />
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Greeting */}
         <View style={styles.greeting}>
           <Text style={styles.greetingText}>{getGreeting(userName)}</Text>
@@ -74,7 +79,7 @@ export default function HomeScreen() {
         {/* Affirmation */}
         <AffirmationCard affirmation={affirmation} />
 
-        {/* Challenges */}
+        {/* Journeys */}
         <Text style={styles.sectionLabel}>Your journeys</Text>
 
         <ContinueChallengeCard
@@ -98,32 +103,24 @@ export default function HomeScreen() {
         {/* Quick access */}
         <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>Quick access</Text>
         <View style={styles.quickRow}>
-          <TouchableOpacity
-            style={styles.quickBtn}
+          <QuickBtn
+            icon="grid-outline"
+            label="Challenges"
+            color={COLORS.primary}
             onPress={() => router.push('/challenges' as any)}
-            activeOpacity={0.75}
-          >
-            <Ionicons name="grid-outline" size={20} color={COLORS.primary} />
-            <Text style={styles.quickBtnText}>Challenges</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickBtn}
+          />
+          <QuickBtn
+            icon="leaf-outline"
+            label="Return"
+            color={COLORS.accentWarm}
             onPress={() => router.push('/return' as any)}
-            activeOpacity={0.75}
-          >
-            <Ionicons name="leaf-outline" size={20} color={COLORS.accent} />
-            <Text style={styles.quickBtnText}>Return</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickBtn}
+          />
+          <QuickBtn
+            icon="journal-outline"
+            label="Notes"
+            color={COLORS.textSecondary}
             onPress={() => router.push('/notes' as any)}
-            activeOpacity={0.75}
-          >
-            <Ionicons name="journal-outline" size={20} color={COLORS.textSecondary} />
-            <Text style={styles.quickBtnText}>Notes</Text>
-          </TouchableOpacity>
+          />
         </View>
       </ScrollView>
 
@@ -136,36 +133,57 @@ export default function HomeScreen() {
   );
 }
 
+function QuickBtn({
+  icon,
+  label,
+  color,
+  onPress,
+}: {
+  icon: any;
+  label: string;
+  color: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.quickBtn} onPress={onPress} activeOpacity={0.78}>
+      <View style={[styles.quickIcon, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
+      <Text style={styles.quickBtnText}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { paddingHorizontal: 24, paddingBottom: 56 },
   greeting: {
-    marginTop: 4,
-    marginBottom: 24,
+    marginTop: 6,
+    marginBottom: 26,
   },
   greetingText: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.3,
-    marginBottom: 4,
+    letterSpacing: -0.4,
+    marginBottom: 5,
+    lineHeight: 35,
   },
   date: {
     color: COLORS.textMuted,
     fontSize: 14,
+    letterSpacing: 0.2,
   },
   sectionLabel: {
     color: COLORS.textMuted,
     fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 1.4,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 14,
-    marginTop: 28,
+    marginTop: 30,
   },
-  sectionLabelSpaced: {
-    marginTop: 32,
-  },
+  sectionLabelSpaced: { marginTop: 34 },
   quickRow: {
     flexDirection: 'row',
     gap: 10,
@@ -173,16 +191,24 @@ const styles = StyleSheet.create({
   quickBtn: {
     flex: 1,
     backgroundColor: COLORS.card,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     paddingVertical: 18,
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  quickIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   quickBtnText: {
     color: COLORS.textSecondary,
     fontSize: 12,
     fontWeight: '500',
+    letterSpacing: 0.2,
   },
 });

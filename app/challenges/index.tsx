@@ -2,11 +2,12 @@ import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { ChallengeCard } from '@/components/ChallengeCard';
-import { COLORS } from '@/constants/colors';
+import { COLORS, GRADIENTS, RADIUS } from '@/constants/colors';
 import { getCompletedDays, getCompetitionProgress, getUserName } from '@/utils/storage';
 
 export default function ChallengesScreen() {
@@ -32,13 +33,22 @@ export default function ChallengesScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <LinearGradient
+        colors={GRADIENTS.screenMain}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
+
       <Header title="Challenges" onMenuPress={() => setDrawerOpen(true)} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.heading}>Your journeys</Text>
-        <Text style={styles.sub}>
-          Each challenge is a 21-day practice. Take them at your own pace.
-        </Text>
+        <View style={styles.hero}>
+          <Text style={styles.heading}>Your journeys</Text>
+          <Text style={styles.sub}>
+            Each challenge is a 21-day practice. Take them at your own pace.
+          </Text>
+        </View>
 
         <ChallengeCard
           title="Unbothered"
@@ -60,12 +70,12 @@ export default function ChallengesScreen() {
 
         <View style={styles.spacer} />
 
-        {/* Teaser for future challenges */}
-        <View style={styles.comingSoonCard}>
+        {/* Coming soon teaser */}
+        <View style={styles.comingSoon}>
           <Text style={styles.comingSoonSymbol}>◇</Text>
-          <Text style={styles.comingSoonTitle}>More on the way</Text>
+          <Text style={styles.comingSoonTitle}>More journeys on the way</Text>
           <Text style={styles.comingSoonBody}>
-            New emotional regulation journeys are being crafted with care.
+            New emotional regulation practices are being crafted with care.
           </Text>
         </View>
       </ScrollView>
@@ -82,30 +92,33 @@ export default function ChallengesScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { paddingHorizontal: 24, paddingBottom: 56 },
+  hero: {
+    paddingTop: 6,
+    paddingBottom: 28,
+    gap: 8,
+  },
   heading: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.4,
-    marginTop: 4,
-    marginBottom: 6,
+    letterSpacing: -0.5,
+    lineHeight: 35,
   },
   sub: {
     color: COLORS.textSecondary,
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 28,
+    fontSize: 15,
+    lineHeight: 23,
   },
   spacer: { height: 14 },
-  comingSoonCard: {
+  comingSoon: {
     backgroundColor: COLORS.card,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     padding: 28,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     gap: 10,
-    opacity: 0.55,
+    opacity: 0.5,
   },
   comingSoonSymbol: {
     color: COLORS.textMuted,

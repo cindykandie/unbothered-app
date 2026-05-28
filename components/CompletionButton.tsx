@@ -1,6 +1,7 @@
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 
 type Props = {
   isCompleted: boolean;
@@ -18,28 +19,36 @@ export function CompletionButton({ isCompleted, onPress }: Props) {
   }
 
   return (
-    <TouchableOpacity style={styles.btn} onPress={onPress} activeOpacity={0.82}>
-      <Text style={styles.btnText}>Mark Day Complete</Text>
+    <TouchableOpacity
+      style={[styles.wrapper, SHADOWS.glow(COLORS.primary)]}
+      onPress={onPress}
+      activeOpacity={0.84}
+    >
+      <LinearGradient
+        colors={[COLORS.primary, COLORS.primaryLight]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.gradient}
+      >
+        <Text style={styles.btnText}>Mark Day Complete</Text>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  btn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 18,
+  wrapper: {
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+  },
+  gradient: {
     paddingVertical: 20,
     alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 14,
-    elevation: 6,
   },
   btnText: {
-    color: COLORS.white,
+    color: COLORS.backgroundDeep,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     letterSpacing: 0.2,
   },
   doneBanner: {
@@ -47,11 +56,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: COLORS.card,
-    borderRadius: 18,
+    backgroundColor: COLORS.cardAccent,
+    borderRadius: RADIUS.lg,
     paddingVertical: 20,
     borderWidth: 1,
-    borderColor: COLORS.primary + '66',
+    borderColor: COLORS.borderAccent,
   },
   doneText: {
     color: COLORS.primary,

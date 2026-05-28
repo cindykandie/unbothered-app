@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   doneBadge: {
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: COLORS.cardElevated,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 3,

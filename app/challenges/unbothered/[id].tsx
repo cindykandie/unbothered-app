@@ -1,12 +1,13 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { NoteInput } from '@/components/NoteInput';
 import { CompletionButton } from '@/components/CompletionButton';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
 import { getCompletedDays, saveCompletedDay, getNote, saveNote } from '@/utils/storage';
 
@@ -65,27 +66,35 @@ export default function UnbotheredDayScreen() {
 
         <Text style={styles.title}>{challenge.title}</Text>
 
-        {/* Challenge */}
-        <View style={styles.card}>
+        {/* Challenge card */}
+        <View style={[styles.card, SHADOWS.soft]}>
           <Text style={styles.cardLabel}>Today's practice</Text>
           <Text style={styles.cardText}>{challenge.description}</Text>
         </View>
 
         {/* Reflection */}
-        <View style={[styles.card, styles.reflectCard]}>
-          <Text style={[styles.cardLabel, styles.reflectLabel]}>Reflect on this</Text>
-          <Text style={[styles.cardText, styles.reflectText]}>{challenge.reflectionPrompt}</Text>
+        <View style={[styles.reflectWrapper]}>
+          <LinearGradient
+            colors={['#1D3557', '#162032']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.reflectGradient}
+          >
+            <View style={styles.reflectHeader}>
+              <View style={styles.reflectDot} />
+              <Text style={styles.reflectLabel}>Reflect on this</Text>
+            </View>
+            <Text style={styles.reflectText}>{challenge.reflectionPrompt}</Text>
+          </LinearGradient>
         </View>
 
         {/* Notes */}
-        <View style={styles.noteSection}>
-          <NoteInput
-            value={note}
-            onChange={(text) => { setNote(text); setNoteSaved(false); }}
-            onSave={handleSaveNote}
-            saved={noteSaved}
-          />
-        </View>
+        <NoteInput
+          value={note}
+          onChange={(text) => { setNote(text); setNoteSaved(false); }}
+          onSave={handleSaveNote}
+          saved={noteSaved}
+        />
 
         {/* Complete */}
         <CompletionButton isCompleted={isCompleted} onPress={handleMarkComplete} />
@@ -111,12 +120,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   doneBadge: {
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: COLORS.primaryDim,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: COLORS.primary + '55',
+    borderColor: COLORS.borderAccent,
   },
   doneBadgeText: {
     color: COLORS.primary,
@@ -125,14 +134,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: COLORS.text,
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
-    letterSpacing: -0.5,
-    lineHeight: 35,
+    letterSpacing: -0.6,
+    lineHeight: 37,
   },
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     padding: 22,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -148,18 +157,41 @@ const styles = StyleSheet.create({
   cardText: {
     color: COLORS.text,
     fontSize: 16,
-    lineHeight: 26,
+    lineHeight: 27,
   },
-  reflectCard: {
-    backgroundColor: COLORS.secondary,
-    borderColor: 'transparent',
+  reflectWrapper: {
+    borderRadius: RADIUS.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(91,192,190,0.15)',
+  },
+  reflectGradient: {
+    padding: 24,
+    gap: 14,
+  },
+  reflectHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  reflectDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.accent,
   },
   reflectLabel: {
     color: COLORS.accent,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
   },
   reflectText: {
-    color: COLORS.white,
+    color: COLORS.text,
+    fontSize: 17,
+    lineHeight: 27,
     fontStyle: 'italic',
+    fontWeight: '400',
   },
-  noteSection: {},
 });

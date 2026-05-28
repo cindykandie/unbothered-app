@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: COLORS.cardElevated,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     alignSelf: 'flex-end',
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: COLORS.cardElevated,
     borderRadius: 10,
     paddingHorizontal: 18,
     paddingVertical: 10,

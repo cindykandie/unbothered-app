@@ -1,19 +1,19 @@
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { ReflectionCard } from '@/components/ReflectionCard';
-import { COLORS } from '@/constants/colors';
+import { COLORS, GRADIENTS, RADIUS } from '@/constants/colors';
 import { getUserName, getCombinedNotes } from '@/utils/storage';
 import type { CombinedNote } from '@/utils/storage';
 
 type Filter = 'all' | 'unbothered' | 'softening';
 
 export default function NotesScreen() {
-  const router = useRouter();
   const [userName, setUserName] = useState('');
   const [allNotes, setAllNotes] = useState<CombinedNote[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
@@ -34,6 +34,13 @@ export default function NotesScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <LinearGradient
+        colors={GRADIENTS.screenMain}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
+
       <Header title="Reflections" onMenuPress={() => setDrawerOpen(true)} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -41,18 +48,22 @@ export default function NotesScreen() {
 
         {/* Filter pills */}
         <View style={styles.filterRow}>
-          {(['all', 'unbothered', 'softening'] as Filter[]).map((f) => (
-            <TouchableOpacity
-              key={f}
-              style={[styles.filterPill, filter === f && styles.filterPillActive]}
-              onPress={() => setFilter(f)}
-              activeOpacity={0.75}
-            >
-              <Text style={[styles.filterPillText, filter === f && styles.filterPillTextActive]}>
-                {f === 'all' ? 'All' : f === 'unbothered' ? 'Unbothered' : 'Softening'}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {(['all', 'unbothered', 'softening'] as Filter[]).map((f) => {
+            const active = filter === f;
+            const color = f === 'unbothered' ? COLORS.primary : f === 'softening' ? COLORS.accent : COLORS.textSecondary;
+            return (
+              <TouchableOpacity
+                key={f}
+                style={[styles.pill, active && { borderColor: color + '55', backgroundColor: color + '14' }]}
+                onPress={() => setFilter(f)}
+                activeOpacity={0.78}
+              >
+                <Text style={[styles.pillText, active && { color }]}>
+                  {f === 'all' ? 'All' : f === 'unbothered' ? 'Unbothered' : 'Softening'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {filtered.length === 0 ? (
@@ -60,7 +71,7 @@ export default function NotesScreen() {
             <Text style={styles.emptySymbol}>◇</Text>
             <Text style={styles.emptyTitle}>Nothing here yet</Text>
             <Text style={styles.emptyBody}>
-              Your reflections will appear here as you write them across both challenges.
+              Your reflections will appear here as you write them across both journeys.
             </Text>
           </View>
         ) : (
@@ -90,47 +101,40 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingBottom: 56 },
   heading: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.3,
-    marginTop: 4,
+    letterSpacing: -0.4,
+    marginTop: 6,
     marginBottom: 20,
+    lineHeight: 35,
   },
   filterRow: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 24,
   },
-  filterPill: {
-    paddingHorizontal: 14,
+  pill: {
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: RADIUS.full,
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  filterPillActive: {
-    backgroundColor: COLORS.primary + '22',
-    borderColor: COLORS.primary + '66',
-  },
-  filterPillText: {
+  pillText: {
     color: COLORS.textMuted,
     fontSize: 13,
     fontWeight: '500',
   },
-  filterPillTextActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
   empty: {
-    marginTop: 60,
+    marginTop: 70,
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 24,
   },
   emptySymbol: {
     color: COLORS.textMuted,
-    fontSize: 32,
+    fontSize: 30,
     marginBottom: 4,
   },
   emptyTitle: {

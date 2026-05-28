@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS } from '@/constants/colors';
 
 type Props = {
   value: string;
@@ -28,7 +28,7 @@ export function NoteInput({ value, onChange, onSave, saved = false }: Props) {
         activeOpacity={0.8}
       >
         <Text style={[styles.btnText, saved && styles.btnTextSaved]}>
-          {saved ? '✓  Reflection saved' : 'Save reflection'}
+          {saved ? '✓  Saved' : 'Save reflection'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -36,9 +36,7 @@ export function NoteInput({ value, onChange, onSave, saved = false }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 12,
-  },
+  container: { gap: 12 },
   label: {
     color: COLORS.textMuted,
     fontSize: 11,
@@ -48,27 +46,27 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: COLORS.card,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 18,
     paddingVertical: 16,
     color: COLORS.text,
     fontSize: 15,
-    lineHeight: 22,
-    minHeight: 120,
+    lineHeight: 24,
+    minHeight: 130,
   },
   btn: {
-    backgroundColor: COLORS.cardAlt,
-    borderRadius: 14,
+    backgroundColor: COLORS.cardElevated,
+    borderRadius: RADIUS.md,
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
   btnSaved: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.card,
+    borderColor: COLORS.borderAccent,
+    backgroundColor: COLORS.cardAccent,
   },
   btnText: {
     color: COLORS.textSecondary,
@@ -77,5 +75,6 @@ const styles = StyleSheet.create({
   },
   btnTextSaved: {
     color: COLORS.primary,
+    fontWeight: '600',
   },
 });

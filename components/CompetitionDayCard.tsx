@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS } from '@/constants/colors';
 import type { CompetitionChallenge } from '@/types';
 
 type Props = {
@@ -13,25 +13,18 @@ type Props = {
 export function CompetitionDayCard({ challenge, isCompleted, isLocked, onPress }: Props) {
   return (
     <TouchableOpacity
-      style={[
-        styles.card,
-        isCompleted && styles.cardCompleted,
-        isLocked && styles.cardLocked,
-      ]}
+      style={[styles.card, isCompleted && styles.cardCompleted, isLocked && styles.cardLocked]}
       onPress={onPress}
-      activeOpacity={isLocked ? 1 : 0.75}
+      activeOpacity={isLocked ? 1 : 0.78}
       disabled={isLocked}
     >
-      <View style={styles.left}>
-        <View style={[styles.dayBadge, isCompleted && styles.dayBadgeCompleted]}>
-          {isCompleted ? (
-            <Ionicons name="checkmark" size={14} color={COLORS.primary} />
-          ) : (
-            <Text style={[styles.dayNumber, isLocked && styles.dayNumberLocked]}>
+      <View style={[styles.badge, isCompleted && styles.badgeDone]}>
+        {isCompleted
+          ? <Ionicons name="checkmark" size={14} color={COLORS.primary} />
+          : <Text style={[styles.badgeNum, isLocked && styles.badgeNumLocked]}>
               {challenge.day}
             </Text>
-          )}
-        </View>
+        }
       </View>
 
       <View style={styles.body}>
@@ -43,17 +36,11 @@ export function CompetitionDayCard({ challenge, isCompleted, isLocked, onPress }
         </Text>
       </View>
 
-      {!isLocked && (
-        <Ionicons
-          name="chevron-forward"
-          size={16}
-          color={isCompleted ? COLORS.primary : COLORS.textMuted}
-          style={styles.arrow}
-        />
-      )}
-      {isLocked && (
-        <Ionicons name="lock-closed-outline" size={16} color={COLORS.textMuted} style={styles.arrow} />
-      )}
+      <Ionicons
+        name={isLocked ? 'lock-closed-outline' : 'chevron-forward'}
+        size={15}
+        color={COLORS.textMuted}
+      />
     </TouchableOpacity>
   );
 }
@@ -63,7 +50,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.card,
-    borderRadius: 18,
+    borderRadius: RADIUS.lg,
     padding: 16,
     marginBottom: 10,
     borderWidth: 1,
@@ -71,38 +58,30 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   cardCompleted: {
-    borderColor: COLORS.primary + '55',
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: COLORS.cardAccent,
+    borderColor: 'rgba(91,192,190,0.2)',
   },
-  cardLocked: {
-    opacity: 0.45,
-  },
-  left: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayBadge: {
+  cardLocked: { opacity: 0.4 },
+  badge: {
     width: 36,
     height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.cardAlt,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.cardElevated,
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayBadgeCompleted: {
-    backgroundColor: COLORS.primary + '22',
-    borderColor: COLORS.primary + '66',
+  badgeDone: {
+    backgroundColor: COLORS.primaryDim,
+    borderColor: COLORS.borderAccent,
   },
-  dayNumber: {
+  badgeNum: {
     color: COLORS.textSecondary,
     fontSize: 13,
     fontWeight: '700',
   },
-  dayNumberLocked: {
-    color: COLORS.textMuted,
-  },
+  badgeNumLocked: { color: COLORS.textMuted },
   body: {
     flex: 1,
     gap: 4,
@@ -113,15 +92,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.1,
   },
-  titleLocked: {
-    color: COLORS.textMuted,
-  },
+  titleLocked: { color: COLORS.textMuted },
   preview: {
     color: COLORS.textSecondary,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  arrow: {
-    marginLeft: 4,
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

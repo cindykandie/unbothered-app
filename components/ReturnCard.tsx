@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS } from '@/constants/colors';
 
 type Props = {
   text: string;
@@ -7,10 +7,11 @@ type Props = {
 };
 
 export function ReturnCard({ text, variant = 'default' }: Props) {
+  const isAccent = variant === 'accent';
   return (
-    <View style={[styles.card, variant === 'accent' && styles.cardAccent]}>
-      <Text style={styles.mark}>—</Text>
-      <Text style={[styles.text, variant === 'accent' && styles.textAccent]}>{text}</Text>
+    <View style={[styles.card, isAccent && styles.cardAccent]}>
+      <View style={[styles.bar, isAccent && styles.barAccent]} />
+      <Text style={[styles.text, isAccent && styles.textAccent]}>{text}</Text>
     </View>
   );
 }
@@ -18,23 +19,29 @@ export function ReturnCard({ text, variant = 'default' }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 18,
-    padding: 22,
+    borderRadius: RADIUS.lg,
+    padding: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
+    alignItems: 'center',
+    gap: 16,
+    overflow: 'hidden',
   },
   cardAccent: {
-    backgroundColor: COLORS.secondary,
-    borderColor: 'transparent',
+    backgroundColor: 'rgba(91,192,190,0.07)',
+    borderColor: 'rgba(91,192,190,0.18)',
   },
-  mark: {
-    color: COLORS.accent,
-    fontSize: 18,
-    fontWeight: '300',
-    marginTop: 1,
+  bar: {
+    width: 3,
+    alignSelf: 'stretch',
+    backgroundColor: COLORS.accent,
+    borderRadius: 2,
+    opacity: 0.7,
+  },
+  barAccent: {
+    backgroundColor: COLORS.primary,
+    opacity: 0.8,
   },
   text: {
     flex: 1,
@@ -44,6 +51,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   textAccent: {
-    color: COLORS.white,
+    color: COLORS.text,
   },
 });

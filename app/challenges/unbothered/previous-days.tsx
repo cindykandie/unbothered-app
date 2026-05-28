@@ -2,10 +2,11 @@ import { ScrollView, View, Text, TouchableOpacity, Alert, StyleSheet } from 'rea
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { DayCard } from '@/components/DayCard';
-import { COLORS } from '@/constants/colors';
+import { COLORS, GRADIENTS, RADIUS } from '@/constants/colors';
 import { challenges } from '@/constants/challenges';
 import { getCompletedDays, getAllNotes, clearProgress } from '@/utils/storage';
 
@@ -43,6 +44,12 @@ export default function UnbotheredPreviousDaysScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <LinearGradient
+        colors={GRADIENTS.screenMain}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
       <Header showBack />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -64,7 +71,7 @@ export default function UnbotheredPreviousDaysScreen() {
           <TouchableOpacity style={styles.restartBtn} onPress={handleRestart} activeOpacity={0.7}>
             <Text style={styles.restartText}>Restart from Day 1</Text>
           </TouchableOpacity>
-          <Text style={styles.restartHint}>Resets progress only — your notes are kept</Text>
+          <Text style={styles.restartHint}>Resets progress only — notes are kept</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -76,16 +83,17 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingBottom: 56 },
   heading: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.3,
-    marginTop: 4,
+    letterSpacing: -0.4,
+    marginTop: 6,
     marginBottom: 4,
   },
   sub: {
     color: COLORS.textMuted,
     fontSize: 14,
     marginBottom: 24,
+    letterSpacing: 0.1,
   },
   restartSection: {
     alignItems: 'center',
@@ -101,7 +109,7 @@ const styles = StyleSheet.create({
   restartBtn: {
     paddingVertical: 14,
     paddingHorizontal: 28,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -113,6 +121,6 @@ const styles = StyleSheet.create({
   restartHint: {
     color: COLORS.textMuted,
     fontSize: 12,
-    opacity: 0.6,
+    opacity: 0.55,
   },
 });

@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS } from '@/constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, RADIUS, SHADOWS } from '@/constants/colors';
 
 type Props = {
   completedDays: number[];
@@ -12,10 +13,10 @@ export function ProgressTracker({ completedDays, totalDays, streak }: Props) {
   const percent = Math.round((count / totalDays) * 100);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, SHADOWS.soft]}>
       <View style={styles.statsRow}>
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{count}</Text>
+          <Text style={[styles.statValue, { color: COLORS.primary }]}>{count}</Text>
           <Text style={styles.statLabel}>Completed</Text>
         </View>
         <View style={styles.divider} />
@@ -25,21 +26,35 @@ export function ProgressTracker({ completedDays, totalDays, streak }: Props) {
         </View>
         <View style={styles.divider} />
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{streak}</Text>
-          <Text style={styles.statLabel}>Day streak</Text>
+          <Text style={[styles.statValue, { color: COLORS.accent }]}>{streak}</Text>
+          <Text style={styles.statLabel}>Streak</Text>
         </View>
       </View>
 
+      {/* Progress bar */}
       <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width: `${percent}%` as any }]} />
+        <LinearGradient
+          colors={[COLORS.primary, COLORS.primaryLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.barFill, { width: `${percent}%` as any }]}
+        />
       </View>
+      <Text style={styles.percent}>{percent}%</Text>
 
-      <Text style={styles.percent}>{percent}% complete</Text>
-
+      {/* Dot grid */}
       <View style={styles.dotGrid}>
         {Array.from({ length: totalDays }, (_, i) => {
           const done = completedDays.includes(i + 1);
-          return <View key={i} style={[styles.dot, done && styles.dotDone]} />;
+          return done ? (
+            <LinearGradient
+              key={i}
+              colors={[COLORS.primary, COLORS.primaryLight]}
+              style={styles.dot}
+            />
+          ) : (
+            <View key={i} style={[styles.dot, styles.dotEmpty]} />
+          );
         })}
       </View>
     </View>
@@ -49,7 +64,7 @@ export function ProgressTracker({ completedDays, totalDays, streak }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     padding: 22,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -85,13 +100,12 @@ const styles = StyleSheet.create({
   },
   barTrack: {
     height: 5,
-    backgroundColor: COLORS.cardAlt,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 3,
     overflow: 'hidden',
   },
   barFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
     borderRadius: 3,
   },
   percent: {
@@ -99,6 +113,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     textAlign: 'center',
+    marginTop: -8,
   },
   dotGrid: {
     flexDirection: 'row',
@@ -110,12 +125,10 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.cardAlt,
+  },
+  dotEmpty: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
     borderWidth: 1,
     borderColor: COLORS.border,
-  },
-  dotDone: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
   },
 });

@@ -2,29 +2,21 @@ import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Header } from '@/components/Header';
 import { CompetitionDayCard } from '@/components/CompetitionDayCard';
-import { COLORS } from '@/constants/colors';
+import { COLORS, GRADIENTS } from '@/constants/colors';
 import { competitionChallenges } from '@/constants/competitionChallenge';
-import { getCompetitionProgress, getCompetitionReflection } from '@/utils/storage';
+import { getCompetitionProgress } from '@/utils/storage';
 
 export default function SofteningPreviousDaysScreen() {
   const router = useRouter();
   const [completedDays, setCompletedDays] = useState<number[]>([]);
-  const [notes, setNotes] = useState<Record<number, string>>({});
 
   async function load() {
     const progress = await getCompetitionProgress();
     setCompletedDays(progress.completedDays);
-
-    const noteEntries = await Promise.all(
-      competitionChallenges.map(async (c) => {
-        const text = await getCompetitionReflection(c.day);
-        return [c.day, text] as [number, string];
-      })
-    );
-    setNotes(Object.fromEntries(noteEntries));
   }
 
   useEffect(() => { load(); }, []);
@@ -32,6 +24,12 @@ export default function SofteningPreviousDaysScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <LinearGradient
+        colors={GRADIENTS.screenMain}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+      />
       <Header showBack />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -50,7 +48,7 @@ export default function SofteningPreviousDaysScreen() {
           />
         ))}
 
-        <View style={styles.bottomSpacer} />
+        <View style={styles.spacer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -61,17 +59,18 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 24, paddingBottom: 32 },
   heading: {
     color: COLORS.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.3,
-    marginTop: 4,
+    letterSpacing: -0.4,
+    marginTop: 6,
     marginBottom: 4,
-    lineHeight: 33,
+    lineHeight: 35,
   },
   sub: {
     color: COLORS.textMuted,
     fontSize: 14,
     marginBottom: 24,
+    letterSpacing: 0.1,
   },
-  bottomSpacer: { height: 24 },
+  spacer: { height: 24 },
 });

@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { COLORS } from '@/constants/colors';
+import { COLORS, RADIUS } from '@/constants/colors';
 import { Logo } from './Logo';
 
 type Props = {
@@ -22,7 +22,7 @@ export function Header({ title, showBack = false, onMenuPress }: Props) {
       >
         <Ionicons
           name={showBack ? 'arrow-back' : 'menu'}
-          size={24}
+          size={22}
           color={COLORS.text}
         />
       </TouchableOpacity>
@@ -43,9 +43,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 42,
+    height: 42,
+    borderRadius: RADIUS.md,
     backgroundColor: COLORS.card,
     justifyContent: 'center',
     alignItems: 'center',
@@ -54,8 +54,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: COLORS.text,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
 });
